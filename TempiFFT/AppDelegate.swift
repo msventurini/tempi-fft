@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -40,6 +41,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
+    func application(
+         _ application: UIApplication,
+         configurationForConnecting connectingSceneSession: UISceneSession,
+         options: UIScene.ConnectionOptions
+     ) -> UISceneConfiguration {
+
+
+         // Each `UISceneConfiguration` must have a unique configuration name
+         // that corresponds to an entry in the information property list scene manifest.
+         let configurationName: String
+
+
+//         switch options.userActivities.first?.activityType {
+//         case UserActivity.GalleryOpenInspectorActivityType:
+//             // Create a photo inspector window scene.
+//             configurationName = "Inspector Configuration"
+//         default:
+//             // Create a default gallery window scene.
+             configurationName = "Default Configuration"
+//         }
+
+
+         return UISceneConfiguration(
+             name: configurationName,
+             sessionRole: connectingSceneSession.role
+         )
+     }
 
 }
+
+
 
