@@ -42,23 +42,26 @@ class TempiAudioInput: NSObject {
 
     /// Start recording. Prompts for access to microphone if necessary.
     func startRecording() {
-        do {
-            
-            if self.audioUnit == nil {
-                setupAudioSession()
-                setupAudioUnit()
+        Task {
+            do {
+                
+                if self.audioUnit == nil {
+                    setupAudioSession()
+                    setupAudioUnit()
+                }
+                
+                try self.audioSession.setActive(true)
+                var osErr: OSStatus = 0
+                
+                osErr = AudioUnitInitialize(self.audioUnit)
+                assert(osErr == noErr, "*** AudioUnitInitialize err \(osErr)")
+                osErr = AudioOutputUnitStart(self.audioUnit)
+                assert(osErr == noErr, "*** AudioOutputUnitStart err \(osErr)")
+            } catch {
+                print("*** startRecording error: \(error)")
             }
-            
-            try self.audioSession.setActive(true)
-            var osErr: OSStatus = 0
-            
-            osErr = AudioUnitInitialize(self.audioUnit)
-            assert(osErr == noErr, "*** AudioUnitInitialize err \(osErr)")
-            osErr = AudioOutputUnitStart(self.audioUnit)
-            assert(osErr == noErr, "*** AudioOutputUnitStart err \(osErr)")
-        } catch {
-            print("*** startRecording error: \(error)")
         }
+        
     }
     
     /// Stop recording.
@@ -132,12 +135,17 @@ class TempiAudioInput: NSObject {
             // This will have an impact on CPU usage. .01 gives 512 samples per frame on iPhone. (Probably .01 * 44100 rounded up.)
             // NB: This is considered a 'hint' and more often than not is just ignored.
             try audioSession.setPreferredIOBufferDuration(0.01)
-            
-            audioSession.requestRecordPermission { (granted) -> Void in
+            AVAudioApplication.requestRecordPermission { (granted) in
                 if !granted {
                     print("*** record permission denied")
                 }
             }
+//            audioSession.requestRecordPermission { (granted) in
+//                if !granted {
+//                    print("*** record permission denied")
+//                }
+//            }
+//        
         } catch {
             print("*** audioSession error: \(error)")
         }

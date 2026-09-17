@@ -84,7 +84,7 @@ import Accelerate
     private var window:[Float] = []
     private var fftSetup:FFTSetup
     private var hasPerformedFFT: Bool = false
-    private var complexBuffer: DSPSplitComplex!
+    private var complexBuffer: DSPSplitComplex! = nil
     
     /// Instantiate the FFT.
     /// - Parameter withSize: The length of the sample buffer we'll be analyzing. Must be a power of 2. The resulting ```magnitudes``` are of length ```inSize/2```.
@@ -109,7 +109,32 @@ import Accelerate
         // Init the complexBuffer
         var real = [Float](repeating: 0.0, count: self.halfSize)
         var imaginary = [Float](repeating: 0.0, count: self.halfSize)
-        self.complexBuffer = DSPSplitComplex(realp: &real, imagp: &imaginary)
+        
+//        real.withUnsafeMutableBufferPointer { realp in
+//            imaginary.withUnsafeMutableBufferPointer { imagp in
+//                complexBuffer = DSPSplitComplex(realp: realp.baseAddress!, imagp: realp.baseAddress!)
+//            }
+//        }
+//        self.complexBuffer = DSPSplitComplex(realp: &real, imagp: &imaginary)
+
+        
+        let tempBuffer =
+//        Task {
+            real.withUnsafeMutableBufferPointer { realp in
+                imaginary.withUnsafeMutableBufferPointer { imagp in
+                    
+//                    complexBuffer = DSPSplitComplex(realp: realp.baseAddress!, imagp: realp.baseAddress!)
+                    //        self.complexBuffer = DSPSplitComplex(realp: &real, imagp: &imaginary)
+
+                }
+            }
+            
+//        }
+       
+        
+////
+        
+        
     }
     
     deinit {
@@ -160,17 +185,18 @@ import Accelerate
                 imags.append(element)
             }
         }
-        self.complexBuffer = DSPSplitComplex(realp: UnsafeMutablePointer(mutating: reals), imagp: UnsafeMutablePointer(mutating: imags))
         
-        // This compiles without error but doesn't actually work. It results in garbage values being stored to the complexBuffer's real and imag parts. Why? The above workaround is undoubtedly tons slower so it would be good to get vDSP_ctoz working again.
-//        withUnsafePointer(to: &analysisBuffer, { $0.withMemoryRebound(to: DSPComplex.self, capacity: analysisBuffer.count) {
-//            vDSP_ctoz($0, 2, &(self.complexBuffer!), 1, UInt(self.halfSize))
-//            }
-//        })
-        // Verifying garbage values.
-//        let rFloats = [Float](UnsafeBufferPointer(start: self.complexBuffer.realp, count: self.halfSize))
-//        let iFloats = [Float](UnsafeBufferPointer(start: self.complexBuffer.imagp, count: self.halfSize))
+        reals.withUnsafeMutableBufferPointer { forwartInputRealPtr in
+            imags.withUnsafeMutableBufferPointer { forwardInputImagPtr in
+                //            self.complexBuffer = DSPSplitComplex(realp: UnsafeMutablePointer(mutating: reals), imagp: UnsafeMutablePointer(mutating: imags))
+                self.complexBuffer = DSPSplitComplex(realp: forwartInputRealPtr.baseAddress!, imagp: forwardInputImagPtr.baseAddress!)
+            }
+
+        }
         
+        
+        
+
         // Perform a forward FFT
         vDSP_fft_zrip(self.fftSetup, &(self.complexBuffer!), 1, UInt(self.log2Size), Int32(FFT_FORWARD))
         

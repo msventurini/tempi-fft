@@ -10,8 +10,24 @@ import UIKit
 
 class SpectralView: UIView {
 
+    
     var fft: TempiFFT!
-
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    
+//    class var overrideableComputedTypeProperty: Int {
+//            return 107
+//    }{{}}
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
+    
     override func draw(_ rect: CGRect) {
         
         if fft == nil {
